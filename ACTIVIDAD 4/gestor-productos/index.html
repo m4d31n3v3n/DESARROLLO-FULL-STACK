@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Productos - Fullstack</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #b7d4ff; display: flex; justify-content: center; padding: 50px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 400px; }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #fd6ea2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-reg { background: #cf82ff; }
+        .item-prod { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .item-info { display: flex; flex-direction: column; }
+        .precio { color: #2ecc71; font-weight: bold; }
+        .hidden { display: none; }
+        .logout { color: #d21500; cursor: pointer; font-size: 13px; display: block; text-align: center; margin-top: 15px; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="auth-box">
+        <h2>Acceso al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="login()">Iniciar Sesión</button>
+        <button class="btn-reg" onclick="registrar()">Crear Cuenta de Vendedor</button>
+    </div>
+
+    <div class="card hidden" id="app-box">
+        <h2>Inventario de Productos</h2>
+        <input type="text" id="nombreProd" placeholder="Nombre del producto">
+        <input type="number" id="precioProd" placeholder="Precio ($)">
+        <input type="text" id="catProd" placeholder="Categoría (Ej: Tech, Hogar)">
+        <button onclick="crear()">Registrar Producto</button>
+        
+        <div id="lista"></div>
+        
+        <span class="logout" onclick="logout()">Cerrar Sesión</span>
+    </div>
+
+    <script>
+        const API = '/api';
+        const authBox = document.getElementById('auth-box');
+        const appBox = document.getElementById('app-box');
+
+        // REGISTRO Y LOGIN (Basado en source 1)
+        async function registrar() {
+            const res = await fetch(`${API}/auth/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email.value, password: pass.value })
+            });
+            const data = await res.json();
+            if(data.success) alert("¡Vendedor registrado! Ya puedes iniciar sesión");
+            else alert(data.error);
+        }
+
+        async function login() {
+            const res = await fetch(`${API}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email.value, password: pass.value })
+            });
+            const data = await res.json();
+            if(data.success) { 
+                localStorage.setItem('token', data.token); // Almacena JWT 
+                location.reload(); 
+            } else {
+                alert(data.error);
+            }
+        }
+
+        // CRUD DE PRODUCTOS
+        async function render() {
+            const res = await fetch(`${API}/productos`);
+            const productos = await res.json();
+            lista.innerHTML = productos.map(p => `
+                <div class="item-prod">
+                    <div class="item-info">
+                        <strong>${p.nombre}</strong>
+                        <span>${p.categoria}</span>
+                        <span class="precio">$${p.precio}</span>
+                    </div>
+                    <button style="width:auto; background:#ff4757; padding:5px 10px" onclick="borrar('${p._id}')">Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        async function crear() {
+            const token = localStorage.getItem('token');
+            if(!nombreProd.value || !precioProd.value) return;
+
+            await fetch(`${API}/productos`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` // Envío de JWT 
+                },
+                body: JSON.stringify({ 
+                    nombre: nombreProd.value, 
+                    precio: precioProd.value,
+                    categoria: catProd.value 
+                })
+            });
+            
+            // Limpiar campos
+            nombreProd.value = ''; precioProd.value = ''; catProd.value = '';
+            render();
+        }
+
+        async function borrar(id) {
+            await fetch(`${API}/productos/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            render();
+        }
+
+        function logout() { localStorage.removeItem('token'); location.reload(); }
+
+        // Control de vista inicial
+        if(localStorage.getItem('token')) {
+            authBox.classList.add('hidden');
+            appBox.classList.remove('hidden');
+            render();
+        }
+    </script>
+</body>
+</html>
