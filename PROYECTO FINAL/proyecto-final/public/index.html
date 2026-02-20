@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>App de Tareas - Fullstack</title>
+    <style>
+        /* Para el fondo puse un color azul pastel */
+        body { font-family: 'Segoe UI', sans-serif; background: #b7d4ff; display: flex; justify-content: center; padding: 50px; }
+        /* El recuadro lo puse con un fondo blanco con un diseño redondeado */
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
+        /* Los estilos de los elementos dentro del recuadro */
+        /* Las letras son de color negro y esta centrado el texto*/
+        h2 { text-align: center; color: #333; }
+        /* Los estilos de los inputs y botones */
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        /* El color de los botones son morado y rosa pastel de 'Inicio de Sesión' y de 'Crear una nueva Cuenta' y la tipografia es color negro */
+        button { width: 100%; padding: 12px; background: #fd6ea2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-reg { background: #cf82ff; }
+        .btn-reg:hover { background: #cf82ff; }
+        .tarea { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .hidden { display: none; }
+        /* El color de las letras de logout es rojo */
+        .logout { color: #d21500; cursor: pointer; font-size: 13px; display: block; text-align: center; margin-top: 15px; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="auth-box">
+        <h2>Bienvenido</h2>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="login()">Iniciar Sesión</button>
+        <button class="btn-reg" onclick="registrar()">Crear Cuenta Nueva</button>
+    </div>
+
+    <div class="card hidden" id="app-box">
+        <h2>Mis Tareas</h2>
+        <input type="text" id="txtTarea" placeholder="¿Qué tienes pendiente?">
+        <button onclick="crear()">Agregar Tarea</button>
+        <div id="lista"></div>
+        <span class="logout" onclick="logout()">Cerrar Sesión</span>
+    </div>
+
+    <script>
+        const API = '/api';
+        const authBox = document.getElementById('auth-box');
+        const appBox = document.getElementById('app-box');
+
+        // FUNCIÓN REGISTRAR
+        async function registrar() {
+            const res = await fetch(`${API}/auth/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email.value, password: pass.value })
+            });
+            const data = await res.json();
+            if(data.success) alert("¡Cuenta creada! Ahora haz clic en 'Iniciar Sesión'");
+            else alert(data.error);
+        }
+
+        // FUNCIÓN LOGIN
+        async function login() {
+            const res = await fetch(`${API}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: email.value, password: pass.value })
+            });
+            const data = await res.json();
+            if(data.success) { 
+                localStorage.setItem('token', data.token); 
+                location.reload(); 
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function render() {
+            const res = await fetch(`${API}/tareas`);
+            const tareas = await res.json();
+            lista.innerHTML = tareas.map(t => `
+                <div class="tarea">
+                    <span>${t.titulo}</span>
+                    <button style="width:auto; background:#ff4757; padding:5px 10px" onclick="borrar('${t._id}')">X</button>
+                </div>
+            `).join('');
+        }
+
+        async function crear() {
+            if(!txtTarea.value) return;
+            await fetch(`${API}/tareas`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` 
+                },
+                body: JSON.stringify({ titulo: txtTarea.value })
+            });
+            txtTarea.value = '';
+            render();
+        }
+
+        async function borrar(id) {
+            await fetch(`${API}/tareas/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            render();
+        }
+
+        function logout() { localStorage.removeItem('token'); location.reload(); }
+
+        // Verificar sesión al cargar
+        if(localStorage.getItem('token')) {
+            authBox.classList.add('hidden');
+            appBox.classList.remove('hidden');
+            render();
+        }
+    </script>
+</body>
+</html>

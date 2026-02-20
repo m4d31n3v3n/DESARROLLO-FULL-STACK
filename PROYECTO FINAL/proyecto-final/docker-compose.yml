@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: proyecto-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - proyecto-network
+
+  backend:
+    build: .
+    container_name: proyecto-backend
+    ports:
+      - "3000:3000"
+    environment:
+      MONGODB_URI: mongodb://user:password@mongodb:27017/proyecto-db
+      JWT_SECRET: tu-clave-secreta-super-segura
+      OPENWEATHER_API_KEY: tu-clave-api-clima
+      NODE_ENV: development
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - proyecto-network
+    command: npm run dev
+
+  frontend:
+    image: node:18-alpine
+    container_name: proyecto-frontend
+    working_dir: /app/frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    networks:
+      - proyecto-network
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  mongodb-data:
+
+networks:
+  proyecto-network:
+    driver: bridge

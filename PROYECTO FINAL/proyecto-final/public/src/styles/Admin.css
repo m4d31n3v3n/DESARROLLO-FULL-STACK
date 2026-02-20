@@ -1,0 +1,125 @@
+/* Admin Panel */
+.admin-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.admin-content {
+    padding: 30px;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.admin-content h1 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.usuarios-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.usuarios-table thead {
+    background-color: #333;
+    color: white;
+}
+
+.usuarios-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.usuarios-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.usuarios-table tr:hover:not(:first-child) {
+    background-color: #f9f9f9;
+}
+
+.usuarios-table tr.inactive {
+    opacity: 0.6;
+    background-color: #f5f5f5;
+}
+
+.usuarios-table select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.usuarios-table select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.usuarios-table select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.badge-active {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.usuarios-table .btn-delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+.usuarios-table .btn-delete:hover {
+    background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 15px;
+    }
+
+    .usuarios-table {
+        font-size: 13px;
+    }
+
+    .usuarios-table th,
+    .usuarios-table td {
+        padding: 10px;
+    }
+
+    .usuarios-table select,
+    .usuarios-table .btn-delete {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build
+dist/
+build/
+*.tgz
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Temporary
+temp/
+tmp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Frontend builds
+frontend/dist/
+frontend/node_modules/
+
+# Backend builds
+/node_modules/
+database.sqlite
